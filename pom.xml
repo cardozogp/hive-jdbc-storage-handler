@@ -16,13 +16,14 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<hadoop-core.version>2.0.0-mr1-cdh4.3.0</hadoop-core.version>
-		<hadoop-common.version>2.0.0-cdh4.3.0</hadoop-common.version>
-		<hive.version>0.10.0-cdh4.3.0</hive.version>
-		<java.version>1.7</java.version>
+		<hadoop-core.version>2.3.0-mr1-cdh5.0.0</hadoop-core.version>
+		<hadoop-common.version>2.3.0-cdh5.0.0</hadoop-common.version>
+		<hive.version>0.12.0-cdh5.0.0</hive.version>
+		<java.version>1.6</java.version>
 	</properties>
 
 	<dependencies>
+		<!--
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
@@ -34,53 +35,74 @@
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+			<systemPath>file:///c:/hadoop/oozie-3.2.0-incubating/oozie-win-distro/share/lib/hive/hive-common-0.9.0.jar</systemPath>
 		</dependency>
+	-->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
 			<version>${hadoop-core.version}</version>
+			<!--
 			<scope>provided</scope>
+			-->
+			<scope>system</scope>
+			<systemPath>c:/hadoop/hadoop-1.1.0-SNAPSHOT/hadoop-core-1.1.0-SNAPSHOT.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-serde</artifactId>
 			<version>${hive.version}</version>
+			<!--
 			<scope>provided</scope>
+			-->
+			<scope>system</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-api</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+			<systemPath>c:/hadoop/hive-0.9.0/lib/hive-serde-0.9.0.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-metastore</artifactId>
 			<version>${hive.version}</version>
+			<!--
 			<scope>provided</scope>
+			-->
+			<scope>system</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-api</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+			<systemPath>c:/hadoop/hive-0.9.0/lib/hive-metastore-0.9.0.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-exec</artifactId>
 			<version>${hive.version}</version>
+			<!--
 			<scope>provided</scope>
+			-->
+			<scope>system</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-api</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+			<systemPath>c:/hadoop/hive-0.9.0/lib/hive-exec-0.9.0.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
+			<!--
+			<scope>system</scope>
+			<systemPath>c:/hadoop/oozie-3.2.0-incubating/oozie-win-distro/libtools/commons-dbcp-1.4.jar</systemPath>-->
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -121,17 +143,15 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.1</version>
-
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
-			<scope>runtime</scope>
+			<scope>runtime</scope> 
 		</dependency>
-	</dependencies>
-
-	<repositories>
+	</dependencies> 
+	<repositories> 
 		<repository>
 			<snapshots>
 				<enabled>false</enabled>
@@ -141,7 +161,7 @@
 			<url>https://repository.cloudera.com/content/repositories/releases/</url>
 			<layout>default</layout>
 		</repository>
-	</repositories>
+	</repositories> 
 
 	<build>
 		<plugins>
@@ -172,6 +192,7 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<version>2.2.1</version>
 			</plugin>
+			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -184,6 +205,7 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+		-->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.4</version>
