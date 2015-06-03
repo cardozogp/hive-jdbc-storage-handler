@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.JobConf;
 
 import com.qubitproducts.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
@@ -97,5 +98,14 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
         return null;
     }
+ /**
+ * * Called just before submitting MapReduce job.
+ * *
+ * * @param tableDesc descriptor for the table being accessed
+ * * @param JobConf jobConf for MapReduce job
+ * */
+    @Override
+    public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
 
+    }
 }

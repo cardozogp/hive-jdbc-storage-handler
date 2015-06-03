@@ -37,6 +37,10 @@ public class DatabaseAccessorFactory {
                 accessor = new MySqlDatabaseAccessor();
                 break;
 
+            case ORACLE:
+                accessor = new OracleDatabaseAccessor();
+                break;
+
             default:
                 accessor = new GenericJdbcDatabaseAccessor();
                 break;
