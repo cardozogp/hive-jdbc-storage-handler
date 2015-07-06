@@ -32,6 +32,8 @@ public class DatabaseAccessorFactory {
     public static DatabaseAccessor getAccessor(DatabaseType dbType) {
 
         DatabaseAccessor accessor = null;
+        
+     // The non-default DatabaseAccessor's are for jdbc drivers that don't support certain escape functions
         switch (dbType) {
             case MYSQL:
                 accessor = new MySqlDatabaseAccessor();
@@ -39,6 +41,10 @@ public class DatabaseAccessorFactory {
 
             case ORACLE:
                 accessor = new OracleDatabaseAccessor();
+                break;
+                
+            case POSTGRES:
+            	accessor = new PostgresDatabaseAccessor();
                 break;
 
             default:

@@ -42,124 +42,136 @@ import java.util.Properties;
 
 public class JdbcSerDe implements SerDe {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSerDe.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSerDe.class);
 
-    private StructObjectInspector objectInspector;
-    private int numColumns;
-    private String[] hiveColumnTypeArray;
-    private List<String> columnNames;
-    private List<String> row;
-
-
-    /*
-     * This method gets called multiple times by Hive. On some invocations, the properties will be empty.
-     * We need to detect when the properties are not empty to initialise the class variables.
-     *
-     * @see org.apache.hadoop.hive.serde2.Deserializer#initialize(org.apache.hadoop.conf.Configuration, java.util.Properties)
-     */
-    @Override
-    public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-        try {
-            LOGGER.debug("Initializing the SerDe");
-
-            // Hive cdh-4.3 does not provide the properties object on all calls
-            if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
-                Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
-
-                DatabaseAccessor dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
-                columnNames = dbAccessor.getColumnNames(tableConfig);
-                numColumns = columnNames.size();
-
-                String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");
-                if (numColumns != hiveColumnNameArray.length) {
-                    throw new SerDeException("Expected " + numColumns + " columns. Table definition has "
-                            + hiveColumnNameArray.length + " columns");
-                }
-                List<String> hiveColumnNames = Arrays.asList(hiveColumnNameArray);
-
-                hiveColumnTypeArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES), ":");
-                if (hiveColumnTypeArray.length == 0) {
-                    throw new SerDeException("Received an empty Hive column type definition");
-                }
-
-                List<ObjectInspector> fieldInspectors = new ArrayList<ObjectInspector>(numColumns);
-                for (int i = 0; i < numColumns; i++) {
-                    fieldInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-                }
-
-                objectInspector =
-                        ObjectInspectorFactory.getStandardStructObjectInspector(hiveColumnNames,
-                                                                                fieldInspectors);
-                row = new ArrayList<String>(numColumns);
-            }
-        }
-        catch (Exception e) {
-            LOGGER.error("Caught exception while initializing the SqlSerDe", e);
-            throw new SerDeException(e);
-        }
-    }
+	private StructObjectInspector objectInspector;
+	private int numColumns;
+	private String[] hiveColumnTypeArray;
+	private List<String> columnNames;
+	private List<String> row;
 
 
-    private String[] parseProperty(String propertyValue, String delimiter) {
-        if ((propertyValue == null) || (propertyValue.trim().isEmpty())) {
-            return new String[] {};
-        }
+	/*
+	 * This method gets called multiple times by Hive. On some invocations, the properties will be empty.
+	 * We need to detect when the properties are not empty to initialise the class variables.
+	 *
+	 * @see org.apache.hadoop.hive.serde2.Deserializer#initialize(org.apache.hadoop.conf.Configuration, java.util.Properties)
+	 */
+	@Override
+	public void initialize(Configuration conf, Properties tbl) throws SerDeException {
+		try {
+			LOGGER.debug("Initializing the SerDe");
 
-        return propertyValue.split(delimiter);
-    }
+			// Hive cdh-4.3 does not provide the properties object on all calls
+			if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
+				Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
+
+				DatabaseAccessor dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
+				columnNames = dbAccessor.getColumnNames(tableConfig);
+				numColumns = columnNames.size();
+
+				String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");
+				if (numColumns != hiveColumnNameArray.length) {
+					throw new SerDeException("Expected " + numColumns + " columns. Table definition has "
+							+ hiveColumnNameArray.length + " columns");
+				}
+				List<String> hiveColumnNames = Arrays.asList(hiveColumnNameArray);
+
+				hiveColumnTypeArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES), ":");
+				if (hiveColumnTypeArray.length == 0) {
+					throw new SerDeException("Received an empty Hive column type definition");
+				}
+
+				List<ObjectInspector> fieldInspectors = new ArrayList<ObjectInspector>(numColumns);
+				for (int i = 0; i < numColumns; i++) {
+					fieldInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+				}
+
+				objectInspector =
+						ObjectInspectorFactory.getStandardStructObjectInspector(hiveColumnNames,
+								fieldInspectors);
+				row = new ArrayList<String>(numColumns);
+			} else {
+
+				List<String> hiveColumnNames = Arrays.asList(tbl.getProperty("columns").split(","));
+				numColumns = hiveColumnNames.size();
+				List<ObjectInspector> fieldInspectors = new ArrayList<ObjectInspector>(numColumns);
+				for (int i = 0; i < numColumns; i++) {
+					fieldInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+				}
+
+				objectInspector =
+						ObjectInspectorFactory.getStandardStructObjectInspector(hiveColumnNames,
+								fieldInspectors);
+			}
+		}
+		catch (Exception e) {
+			LOGGER.error("Caught exception while initializing the SqlSerDe", e);
+			throw new SerDeException(e);
+		}
+	}
 
 
-    @Override
-    public Object deserialize(Writable blob) throws SerDeException {
-        LOGGER.debug("Deserializing from SerDe");
-        if (!(blob instanceof MapWritable)) {
-            throw new SerDeException("Expected MapWritable. Got " + blob.getClass().getName());
-        }
+	private String[] parseProperty(String propertyValue, String delimiter) {
+		if ((propertyValue == null) || (propertyValue.trim().isEmpty())) {
+			return new String[] {};
+		}
 
-        if ((row == null) || (columnNames == null)) {
-            throw new SerDeException("JDBC SerDe hasn't been initialized properly");
-        }
-
-        row.clear();
-        MapWritable input = (MapWritable) blob;
-        Text columnKey = new Text();
-
-        for (int i = 0; i < numColumns; i++) {
-            columnKey.set(columnNames.get(i));
-            Writable value = input.get(columnKey);
-            if (value == null) {
-                row.add(null);
-            }
-            else {
-                row.add(value.toString());
-            }
-        }
-
-        return row;
-    }
+		return propertyValue.split(delimiter);
+	}
 
 
-    @Override
-    public ObjectInspector getObjectInspector() throws SerDeException {
-        return objectInspector;
-    }
+	@Override
+	public Object deserialize(Writable blob) throws SerDeException {
+		LOGGER.debug("Deserializing from SerDe");
+		if (!(blob instanceof MapWritable)) {
+			throw new SerDeException("Expected MapWritable. Got " + blob.getClass().getName());
+		}
+
+		if ((row == null) || (columnNames == null)) {
+			throw new SerDeException("JDBC SerDe hasn't been initialized properly");
+		}
+
+		row.clear();
+		MapWritable input = (MapWritable) blob;
+		Text columnKey = new Text();
+
+		for (int i = 0; i < numColumns; i++) {
+			columnKey.set(columnNames.get(i));
+			Writable value = input.get(columnKey);
+			if (value == null) {
+				row.add(null);
+			}
+			else {
+				row.add(value.toString());
+			}
+		}
+
+		return row;
+	}
 
 
-    @Override
-    public Class<? extends Writable> getSerializedClass() {
-        return MapWritable.class;
-    }
+	@Override
+	public ObjectInspector getObjectInspector() throws SerDeException {
+		return objectInspector;
+	}
 
 
-    @Override
-    public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
-        throw new UnsupportedOperationException("Writes are not allowed");
-    }
+	@Override
+	public Class<? extends Writable> getSerializedClass() {
+		return MapWritable.class;
+	}
 
 
-    @Override
-    public SerDeStats getSerDeStats() {
-        return null;
-    }
+	@Override
+	public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
+		throw new UnsupportedOperationException("Writes are not allowed");
+	}
+
+
+	@Override
+	public SerDeStats getSerDeStats() {
+		return null;
+	}
 
 }

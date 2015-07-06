@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.qubitproducts.hive.storage.jdbc.conf.JdbcStorageConfig;
 import com.qubitproducts.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -193,7 +194,10 @@ public class GenericJdbcDatabaseAccessorTest {
     private Configuration buildConfiguration() {
         String scriptPath =
                             GenericJdbcDatabaseAccessorTest.class.getClassLoader().getResource("test_script.sql")
-                                                                 .getPath();
+                                                                 .getFile();
+        File file = new File(scriptPath);
+        scriptPath = file.getAbsolutePath().replaceAll("\\\\", "/"); //needed so it plays nice with windows
+        
         Configuration config = new Configuration();
         config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), "H2");
         config.set(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), "org.h2.Driver");

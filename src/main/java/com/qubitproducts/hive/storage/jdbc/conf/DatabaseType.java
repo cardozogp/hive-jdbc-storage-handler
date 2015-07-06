@@ -19,6 +19,7 @@ public enum DatabaseType {
     MYSQL,
     H2,
     DERBY,
-    ORACLE
+    ORACLE,
+    POSTGRES
 
 }
