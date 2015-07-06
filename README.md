@@ -12,7 +12,7 @@ Usage
 
 *   Start hive and add the JAR file to the classpath:
 
-        ADD JAR /path/to/hive-jdbc-storage-handler-1.1.1-cdh4.3.0-SNAPSHOT-dist.jar;
+        ADD JAR /path/to/hive-jdbc-storage-handler-1.1.1-cdh5.3.2-SNAPSHOT-dist.jar;
 
 *   Create an external table in Hive:
 
@@ -39,8 +39,8 @@ Configuration
 
 ##### Required Table Properties
 
-*   `qubit.sql.database.type` - Currently only supports `MYSQL`, `H2` and
-    `DERBY`.
+*   `qubit.sql.database.type` - Currently only supports `MYSQL`, `H2`,
+    `DERBY`, `ORACLE`, and `POSTGRES`
 *   `qubit.sql.jdbc.url` - Full JDBC connection URL.
 *   `qubit.sql.jdbc.driver` - JDBC driver class name.
 *   `qubit.sql.query` - Query to run against the database. The Storage
@@ -76,4 +76,4 @@ querying.
 Resultset fetch size can be changed at query time:
 
     SET qubit.sql.jdbc.fetch.size=500;
-
+   
