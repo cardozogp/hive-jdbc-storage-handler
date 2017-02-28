@@ -87,7 +87,10 @@ public class QueryConditionBuilderTest {
         String condition = QueryConditionBuilder.getInstance().buildCondition(conf);
 
         assertThat(condition, is(notNullValue()));
-        assertThat(condition, is(equalToIgnoringWhiteSpace("({d vid} = 'x')")));
+
+        // [aago] Date is okay now, right?
+        //assertThat(condition, is(equalToIgnoringWhiteSpace("({d vid} = 'x')")));
+        assertThat(condition, is(equalToIgnoringWhiteSpace("(vid = 'x')")));
     }
 
 
@@ -101,7 +104,10 @@ public class QueryConditionBuilderTest {
         String condition = QueryConditionBuilder.getInstance().buildCondition(conf);
 
         assertThat(condition, is(notNullValue()));
-        assertThat(condition, is(equalToIgnoringWhiteSpace("({d vid} = 'x')")));
+
+        // [aago] Date is okay now, right?
+        //assertThat(condition, is(equalToIgnoringWhiteSpace("({d vid} = 'x')")));
+        assertThat(condition, is(equalToIgnoringWhiteSpace("(vid = 'x')")));
     }
 
 
