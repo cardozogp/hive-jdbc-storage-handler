@@ -15,11 +15,15 @@
  */
 package com.qubitproducts.hive.storage.jdbc;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.io.serializer.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,21 +126,10 @@ public class QueryConditionBuilder {
             return EMPTY_STRING;
         }
 
-        try (XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(filterXml.getBytes("UTF-8")))) {
-            Object object = decoder.readObject();
-            if (!(object instanceof ExprNodeDesc)) {
-                LOGGER.error("Deserialized filter expression is not of the expected type");
-                throw new RuntimeException("Deserialized filter expression is not of the expected type");
-            }
-
-            ExprNodeDesc conditionNode = (ExprNodeDesc) object;
-            walkTreeAndTranslateColumnNames(conditionNode, columnMap);
-            return conditionNode.getExprString();
-        }
-        catch (Exception e) {
-            LOGGER.error("Error during condition build", e);
-            return EMPTY_STRING;
-        }
+        // [aago] filterXml is not longer in XML but a serialized format
+        ExprNodeDesc conditionNode = Utilities.deserializeExpression(filterXml);
+        walkTreeAndTranslateColumnNames(conditionNode, columnMap);
+        return conditionNode.getExprString();
     }
 
 
@@ -174,14 +167,22 @@ public class QueryConditionBuilder {
         if (dbColumnName.contains(":")) {
             String[] typeSplit = dbColumnName.split(":");
 
+            /* [aago] This not still true, right?
             if (typeSplit[1].equalsIgnoreCase("date")) {
                 return "{d " + typeSplit[0] + "}";
             }
+            */
 
             return typeSplit[0];
         }
         else {
             return dbColumnName;
         }
+    }
+
+    public static void main(String[] args) {
+        String filterXml = "AQEAamF2YS51dGlsLkFycmF5TGlz9AECAQFvcmcuYXBhY2hlLmhhZG9vcC5oaXZlLnFsLnBsYW4uRXhwck5vZGVDb2x1bW5EZXPjAQFjb21wYW55X2nkAAABZGltX2NvbXBhbnmyAQJvcmcuYXBhY2hlLmhhZG9vcC5oaXZlLnNlcmRlMi50eXBlaW5mby5QcmltaXRpdmVUeXBlSW5m7wEBc3RyaW7nAQNvcmcuYXBhY2hlLmhhZG9vcC5oaXZlLnFsLnBsYW4uRXhwck5vZGVDb25zdGFudERlc+MBAQIBAWlu9AJkAQRvcmcuYXBhY2hlLmhhZG9vcC5oaXZlLnFsLnVkZi5nZW5lcmljLkdlbmVyaWNVREZPUExlc3NUaGHuAQAAAYI8AUxFU1MgVEhBzgEFb3JnLmFwYWNoZS5oYWRvb3AuaW8uQm9vbGVhbldyaXRhYmzlAQAAAQIBAWJvb2xlYe4=";
+        String decoded = new String(Base64.decodeBase64(filterXml));
+        System.out.println("BASE64 DECODED: " + decoded);
     }
 }
