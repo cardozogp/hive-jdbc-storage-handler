@@ -19,7 +19,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde.serdeConstants;
+// import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public class QueryConditionBuilder {
         }
 
         String filterXml = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-        String hiveColumns = conf.get(serdeConstants.LIST_COLUMNS);
+        String hiveColumns = conf.get("columns");
         String columnMapping = conf.get(JdbcStorageConfig.COLUMN_MAPPING.getPropertyName());
 
         if ((filterXml == null) || ((columnMapping == null) && (hiveColumns == null))) {
@@ -122,7 +122,8 @@ public class QueryConditionBuilder {
             return EMPTY_STRING;
         }
 
-        try (XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(filterXml.getBytes("UTF-8")))) {
+        try {
+            XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(filterXml.getBytes("UTF-8")));
             Object object = decoder.readObject();
             if (!(object instanceof ExprNodeDesc)) {
                 LOGGER.error("Deserialized filter expression is not of the expected type");

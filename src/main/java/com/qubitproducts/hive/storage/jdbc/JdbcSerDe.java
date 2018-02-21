@@ -16,7 +16,7 @@
 package com.qubitproducts.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.serdeConstants;
+// import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -70,14 +70,14 @@ public class JdbcSerDe implements SerDe {
                 columnNames = dbAccessor.getColumnNames(tableConfig);
                 numColumns = columnNames.size();
 
-                String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");
+                String[] hiveColumnNameArray = parseProperty(tbl.getProperty("columns"), ",");
                 if (numColumns != hiveColumnNameArray.length) {
                     throw new SerDeException("Expected " + numColumns + " columns. Table definition has "
                             + hiveColumnNameArray.length + " columns");
                 }
                 List<String> hiveColumnNames = Arrays.asList(hiveColumnNameArray);
 
-                hiveColumnTypeArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES), ":");
+                hiveColumnTypeArray = parseProperty(tbl.getProperty("columns.types"), ":");
                 if (hiveColumnTypeArray.length == 0) {
                     throw new SerDeException("Received an empty Hive column type definition");
                 }
